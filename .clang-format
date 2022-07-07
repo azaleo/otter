@@ -1,9 +1,15 @@
 BasedOnStyle: LLVM
 
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: DontAlign
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
 BreakConstructorInitializers: BeforeComma
 ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 2
+IncludeBlocks: Merge
 PointerAlignment: Left

@@ -1,5 +1,7 @@
 add_library(otter STATIC)
-target_include_directories(otter PUBLIC include)
+
+set(OTTER_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(otter PUBLIC ${OTTER_INCLUDE_DIRS})
 
 add_subdirectory(include/otter)
 add_subdirectory(lib)

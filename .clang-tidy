@@ -1,0 +1,3 @@
+Checks:
+  -google-explicit-constructor,
+  -modernize-deprecated-headers,
