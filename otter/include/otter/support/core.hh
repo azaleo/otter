@@ -40,8 +40,6 @@
 #error "missing compiler-specific attribs"
 #endif
 
-#define UNUSED(...) (void)(__VA_ARGS__)
-
 #ifdef OTTER_LLP64
 typedef signed char        i8;
 typedef signed short       i16;
@@ -71,7 +69,8 @@ typedef double f64;
 
 namespace otter {
 
-enum FatalError {
+enum FatalError
+{
   FatalError_AssertFailed,
   FatalError_BadAlloc,
   FatalError_Unreachable,
@@ -83,10 +82,12 @@ template <usize N>
 usize findRealCharArrayLength(const char (&arr)[N]) {
   if (!N)
     return 0;
+
   return arr[N - 1] == '\0' ? N - 1 : N;
 }
 
-class CoreStringSpan {
+class CoreStringSpan
+{
   const char* Data = nullptr;
   usize       Length = 0;
 
@@ -101,44 +102,34 @@ public:
 };
 
 #ifdef OTTER_DEBUG
-#define OTTER_ENABLE_FATAL_ERROR_DEBUG true
+#define OTTER_DEBUG_FATAL_ERRORS true
 #else
-#define OTTER_ENABLE_FATAL_ERROR_DEBUG false
+#define OTTER_DEBUG_FATAL_ERRORS false
 #endif
 
-OTTER_NORETURN void
-raiseFatalErrorImpl(FatalError     err,
-                    CoreStringSpan msg,
-                    CoreStringSpan file,
-                    i32            line,
-                    bool           debug = OTTER_ENABLE_FATAL_ERROR_DEBUG);
+OTTER_NORETURN void fatalErrorImpl(FatalError err, CoreStringSpan msg, CoreStringSpan file,
+                                   i32 line, bool debug = OTTER_DEBUG_FATAL_ERRORS);
 
-inline void assertImpl(bool           pred,
-                       CoreStringSpan msg,
-                       CoreStringSpan file,
-                       i32            line,
-                       bool           debug = OTTER_ENABLE_FATAL_ERROR_DEBUG) {
+inline void assertImpl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 line,
+                       bool debug = OTTER_DEBUG_FATAL_ERRORS) {
   if (!pred)
-    raiseFatalErrorImpl(FatalError_AssertFailed, msg, file, line, debug);
+    fatalErrorImpl(FatalError_AssertFailed, msg, file, line, debug);
 }
 
 } // namespace detail
 } // namespace otter
 
-#define OTTER_RAISE_FATAL_ERROR(err, msg) \
-  (::otter::detail::raiseFatalErrorImpl(err, msg, __FILE__, __LINE__))
-
+#define OTTER_FATAL_ERROR(err, msg) (::otter::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
 #define ASSERT(pred, ...) \
-  (::otter::detail::assertImpl( \
-    pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
+  (::otter::detail::assertImpl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
 
 #ifdef OTTER_DEBUG
-#define ASSUME(pred, ...) ASSERT(pred, __VA_ARGS__)
+#define EXPECT(pred, ...) ASSERT(pred, __VA_ARGS__)
+#define ENSURE(pred, ...) ASSERT(pred, __VA_ARGS__)
 #else
-#define ASSUME(pred, ...) UNUSED(0)
+#define EXPECT(pred, ...) (void)0
+#define ENSURE(pred, ...) (void)0
 #endif
 
-#define BAD_ALLOC(msg) \
-  OTTER_RAISE_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
-#define UNREACHABLE(msg) \
-  OTTER_RAISE_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
+#define BAD_ALLOC(msg)   REPORT_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
+#define UNREACHABLE(msg) REPORT_FATAL_ERROR(::otter::FatalError_Unreachable, msg)

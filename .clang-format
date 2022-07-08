@@ -6,10 +6,16 @@ AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: DontAlign
 AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: false
-BinPackParameters: false
 BreakConstructorInitializers: BeforeComma
-ConstructorInitializerIndentWidth: 2
+ColumnLimit: 100
 ContinuationIndentWidth: 2
+ConstructorInitializerIndentWidth: 2
 IncludeBlocks: Merge
 PointerAlignment: Left
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterEnum: true
+  AfterStruct: true
+  AfterUnion: true

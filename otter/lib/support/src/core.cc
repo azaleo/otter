@@ -3,11 +3,8 @@
 
 namespace otter {
 
-void detail::raiseFatalErrorImpl(FatalError     err,
-                                 CoreStringSpan msg,
-                                 CoreStringSpan file,
-                                 i32            line,
-                                 bool           debug) {
+void detail::fatalErrorImpl(FatalError err, CoreStringSpan msg, CoreStringSpan file, i32 line,
+                            bool debug) {
   exit(err == FatalError_BadAlloc ? 102 : 101);
 }
 
