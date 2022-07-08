@@ -131,5 +131,5 @@ inline void assertImpl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 l
 #define ENSURE(pred, ...) (void)0
 #endif
 
-#define BAD_ALLOC(msg)   REPORT_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
-#define UNREACHABLE(msg) REPORT_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
+#define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
+#define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
