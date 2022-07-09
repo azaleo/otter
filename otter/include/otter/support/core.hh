@@ -79,7 +79,7 @@ enum FatalError
 namespace detail {
 
 template <usize N>
-usize find_char_array_length(const char (&arr)[N]) {
+usize findCharArrayLength(const char (&arr)[N]) {
   if (!N)
     return 0;
 
@@ -95,7 +95,7 @@ public:
   template <usize N>
   /*implicit*/ CoreStringSpan(const char (&arr)[N])
     : Data(arr)
-    , Length(find_char_array_length(arr)) {}
+    , Length(findCharArrayLength(arr)) {}
 
   const char* data() const { return Data; }
   usize       length() const { return Length; }
@@ -107,22 +107,21 @@ public:
 #define OTTER_DEBUG_FATAL_ERRORS false
 #endif
 
-OTTER_NORETURN void fatal_error_impl(FatalError err, CoreStringSpan msg, CoreStringSpan file,
-                                     i32 line, bool debug = OTTER_DEBUG_FATAL_ERRORS);
+OTTER_NORETURN void fatalErrorImpl(FatalError err, CoreStringSpan msg, CoreStringSpan file,
+                                   i32 line, bool debug = OTTER_DEBUG_FATAL_ERRORS);
 
-inline void assert_impl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 line,
-                        bool debug = OTTER_DEBUG_FATAL_ERRORS) {
+inline void assertImpl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 line,
+                       bool debug = OTTER_DEBUG_FATAL_ERRORS) {
   if (!pred)
-    fatal_error_impl(FatalError_AssertFailed, msg, file, line, debug);
+    fatalErrorImpl(FatalError_AssertFailed, msg, file, line, debug);
 }
 
 } // namespace detail
 } // namespace otter
 
-#define OTTER_FATAL_ERROR(err, msg) \
-  (::otter::detail::fatal_error_impl(err, msg, __FILE__, __LINE__))
+#define OTTER_FATAL_ERROR(err, msg) (::otter::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
 #define ASSERT(pred, ...) \
-  (::otter::detail::assert_impl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
+  (::otter::detail::assertImpl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
 
 #ifdef OTTER_DEBUG
 #define ASSUME(pred, ...) ASSERT(pred, __VA_ARGS__)
@@ -152,8 +151,8 @@ struct AllocBuffer
   void* Data = nullptr;
   usize Size = 0;
 
-  bool is_valid() const { return Data; }
-  bool operator!() const { return !is_valid(); }
+  bool isValid() const { return Data; }
+  bool operator!() const { return !isValid(); }
 };
 
 class Allocator

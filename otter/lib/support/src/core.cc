@@ -8,15 +8,15 @@
 
 namespace otter {
 
-void detail::fatal_error_impl(FatalError err, CoreStringSpan msg, CoreStringSpan file, i32 line,
-                              bool debug) {
+void detail::fatalErrorImpl(FatalError err, CoreStringSpan msg, CoreStringSpan file, i32 line,
+                            bool debug) {
   exit(err == FatalError_BadAlloc ? 102 : 101);
 }
 
 namespace {
 
 #ifdef OTTER_WIN32
-HANDLE get_heap() {
+HANDLE getHeap() {
   static HANDLE Heap = GetProcessHeap();
   return Heap;
 }
@@ -28,7 +28,7 @@ HANDLE get_heap() {
 
 AllocBuffer OSAllocator::alloc(usize bytes, usize align) {
 #ifdef OTTER_WIN32
-  HANDLE heap = get_heap();
+  HANDLE heap = getHeap();
   if (!heap)
     return {};
 
@@ -44,15 +44,15 @@ AllocBuffer OSAllocator::alloc(usize bytes, usize align) {
 
 AllocBuffer OSAllocator::realloc(void* data, usize bytes, usize align) {
 #ifdef OTTER_WIN32
-  HANDLE heap = get_heap();
+  HANDLE heap = getHeap();
   if (!heap)
     return {};
 
-  void* new_data = HeapReAlloc(heap, 0, data, bytes);
-  if (!new_data)
+  void* newData = HeapReAlloc(heap, 0, data, bytes);
+  if (!newData)
     return {};
 
-  return {new_data, bytes};
+  return {newData, bytes};
 #else
 #error "missing OS realloc"
 #endif
@@ -60,7 +60,7 @@ AllocBuffer OSAllocator::realloc(void* data, usize bytes, usize align) {
 
 AllocResult OSAllocator::dealloc(void* data, usize bytes, usize align) {
 #ifdef OTTER_WIN32
-  HANDLE heap = get_heap();
+  HANDLE heap = getHeap();
   if (!heap)
     return {};
 
@@ -73,18 +73,18 @@ AllocResult OSAllocator::dealloc(void* data, usize bytes, usize align) {
 
 namespace {
 
-bool is_pow2(usize n) {
-  return (n != 0) && (n & (n - 1)) == 0;
+bool isPow2(usize n) {
+  return n != 0 && (n & (n - 1)) == 0;
 }
 
-bool is_valid_align(usize n) {
-  return (n > OTTER_MAX_ALIGN) && is_pow2(n);
+bool isValidAlign(usize n) {
+  return n > OTTER_MAX_ALIGN && isPow2(n);
 }
 
 } // namespace
 } // namespace otter
 
 void* otter::align(void* ptr, usize align) {
-  ASSUME(is_valid_align(align));
+  ASSUME(isValidAlign(align));
   return (void*)(((usize)ptr & ~(align - 1)) + align);
 }
