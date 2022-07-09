@@ -65,26 +65,10 @@ AllocResult OSAllocator::dealloc(void* data, usize bytes, usize align) {
     return {};
 
   auto res = HeapFree(heap, 0, data);
-  return !res ? AllocResult_Success : AllocResult_SystemError;
+  return res ? AllocResult_Success : AllocResult_SystemError;
 #else
 #error "missing OS dealloc"
 #endif
 }
 
-namespace {
-
-bool isPow2(usize n) {
-  return n != 0 && (n & (n - 1)) == 0;
-}
-
-bool isValidAlign(usize n) {
-  return n > OTTER_MAX_ALIGN && isPow2(n);
-}
-
-} // namespace
 } // namespace otter
-
-void* otter::align(void* ptr, usize align) {
-  ASSUME(isValidAlign(align));
-  return (void*)(((usize)ptr & ~(align - 1)) + align);
-}

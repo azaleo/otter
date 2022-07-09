@@ -40,6 +40,8 @@
 #error "missing compiler-specific attribs"
 #endif
 
+#define UNUSED(...) (void)(__VA_ARGS__)
+
 #ifdef OTTER_LLP64
 typedef signed char        i8;
 typedef signed short       i16;
@@ -174,6 +176,42 @@ public:
   AllocResult dealloc(void* data, usize bytes, usize align) override;
 };
 
-void* align(void* ptr, usize align);
+inline Allocator& getDefaultAllocator() {
+  static OSAllocator Alloc;
+  return Alloc;
+}
+
+struct NewType
+{
+};
+constexpr NewType New;
 
 } // namespace otter
+
+inline void* operator new(usize bytes, usize align, otter::NewType) {
+  using namespace otter;
+
+  auto&       al = getDefaultAllocator();
+  AllocBuffer buf = al.alloc(bytes, align);
+  if (!buf)
+    BAD_ALLOC("could not alloc with operator new");
+
+  return buf.Data;
+}
+
+inline void* operator new(usize, void* data, otter::NewType) {
+  return data;
+}
+
+inline void operator delete(void* data, usize bytes, usize align, otter::NewType) {
+  auto& al = otter::getDefaultAllocator();
+  if (auto err = al.dealloc(data, bytes, align)) {
+    UNUSED(err);
+    BAD_ALLOC("could not dealloc with operator delete");
+  }
+}
+
+inline void operator delete(void*, void*, otter::NewType) {}
+
+#define OTTER_NEW(type)          new (alignof(type), otter::New) type
+#define OTTER_DELETE(type, data) operator delete(data, sizeof(type), alignof(type), otter::New)

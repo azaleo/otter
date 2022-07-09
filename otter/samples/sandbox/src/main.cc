@@ -2,6 +2,10 @@
 #include <stdio.h>
 
 int main() {
-  puts("Hello, world!");
-  ASSERT(false, "Hello, world!");
+  auto* test = OTTER_NEW(int);
+
+  new (test, otter::New) int(42);
+  printf("%d\n", *test);
+
+  OTTER_DELETE(int, test);
 }
