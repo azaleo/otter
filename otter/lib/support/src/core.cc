@@ -13,16 +13,16 @@ void detail::fatalErrorImpl(FatalError err, CoreStringSpan msg, CoreStringSpan f
   exit(err == FatalError_BadAlloc ? 102 : 101);
 }
 
+#ifdef OTTER_WIN32
 namespace {
 
-#ifdef OTTER_WIN32
 HANDLE getHeap() {
   static HANDLE Heap = GetProcessHeap();
   return Heap;
 }
-#endif
 
 } // namespace
+#endif
 
 // TODO: Aligned alloc.
 
