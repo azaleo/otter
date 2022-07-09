@@ -79,7 +79,7 @@ enum FatalError
 namespace detail {
 
 template <usize N>
-usize findRealCharArrayLength(const char (&arr)[N]) {
+usize find_char_array_length(const char (&arr)[N]) {
   if (!N)
     return 0;
 
@@ -95,7 +95,7 @@ public:
   template <usize N>
   /*implicit*/ CoreStringSpan(const char (&arr)[N])
     : Data(arr)
-    , Length(findRealCharArrayLength(arr)) {}
+    , Length(find_char_array_length(arr)) {}
 
   const char* data() const { return Data; }
   usize       length() const { return Length; }
@@ -107,29 +107,74 @@ public:
 #define OTTER_DEBUG_FATAL_ERRORS false
 #endif
 
-OTTER_NORETURN void fatalErrorImpl(FatalError err, CoreStringSpan msg, CoreStringSpan file,
-                                   i32 line, bool debug = OTTER_DEBUG_FATAL_ERRORS);
+OTTER_NORETURN void fatal_error_impl(FatalError err, CoreStringSpan msg, CoreStringSpan file,
+                                     i32 line, bool debug = OTTER_DEBUG_FATAL_ERRORS);
 
-inline void assertImpl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 line,
-                       bool debug = OTTER_DEBUG_FATAL_ERRORS) {
+inline void assert_impl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 line,
+                        bool debug = OTTER_DEBUG_FATAL_ERRORS) {
   if (!pred)
-    fatalErrorImpl(FatalError_AssertFailed, msg, file, line, debug);
+    fatal_error_impl(FatalError_AssertFailed, msg, file, line, debug);
 }
 
 } // namespace detail
 } // namespace otter
 
-#define OTTER_FATAL_ERROR(err, msg) (::otter::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
+#define OTTER_FATAL_ERROR(err, msg) \
+  (::otter::detail::fatal_error_impl(err, msg, __FILE__, __LINE__))
 #define ASSERT(pred, ...) \
-  (::otter::detail::assertImpl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
+  (::otter::detail::assert_impl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
 
 #ifdef OTTER_DEBUG
-#define EXPECT(pred, ...) ASSERT(pred, __VA_ARGS__)
-#define ENSURE(pred, ...) ASSERT(pred, __VA_ARGS__)
+#define ASSUME(pred, ...) ASSERT(pred, __VA_ARGS__)
 #else
-#define EXPECT(pred, ...) (void)0
-#define ENSURE(pred, ...) (void)0
+#define ASSUME(pred, ...) (void)0
 #endif
 
 #define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
 #define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
+
+#if defined(OTTER_WIN32) && defined(OTTER_64_BITS)
+#define OTTER_MAX_ALIGN 16
+#else
+#error "missing max align"
+#endif
+
+namespace otter {
+
+enum AllocResult
+{
+  AllocResult_Success = 0,
+  AllocResult_SystemError,
+};
+
+struct AllocBuffer
+{
+  void* Data = nullptr;
+  usize Size = 0;
+
+  bool is_valid() const { return Data; }
+  bool operator!() const { return !is_valid(); }
+};
+
+class Allocator
+{
+public:
+  virtual ~Allocator() = default;
+
+  /// Returned buffers must be aligned to at least `OTTER_MAX_ALIGN`.
+  virtual AllocBuffer alloc(usize bytes, usize align) = 0;
+  virtual AllocBuffer realloc(void* data, usize bytes, usize align) = 0;
+  virtual AllocResult dealloc(void* data, usize bytes, usize align) = 0;
+};
+
+class OSAllocator : public Allocator
+{
+public:
+  AllocBuffer alloc(usize bytes, usize align) override;
+  AllocBuffer realloc(void* data, usize bytes, usize align) override;
+  AllocResult dealloc(void* data, usize bytes, usize align) override;
+};
+
+void* align(void* ptr, usize align);
+
+} // namespace otter
