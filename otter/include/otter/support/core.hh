@@ -40,7 +40,11 @@
 #error "missing compiler-specific attribs"
 #endif
 
-#define UNUSED(...) (void)(__VA_ARGS__)
+#if defined(OTTER_WIN32) && defined(OTTER_64_BITS)
+#define OTTER_MAX_ALIGN 16
+#else
+#error "missing max align"
+#endif
 
 #ifdef OTTER_LLP64
 typedef signed char        i8;
@@ -88,19 +92,15 @@ usize findCharArrayLength(const char (&arr)[N]) {
   return arr[N - 1] == '\0' ? N - 1 : N;
 }
 
-class CoreStringSpan
+struct CoreStringSpan
 {
-  const char* Data = nullptr;
-  usize       Length = 0;
+  const char* _data = nullptr;
+  usize       _length = 0;
 
-public:
   template <usize N>
   /*implicit*/ CoreStringSpan(const char (&arr)[N])
-    : Data(arr)
-    , Length(findCharArrayLength(arr)) {}
-
-  const char* data() const { return Data; }
-  usize       length() const { return Length; }
+    : _data(arr)
+    , _length(findCharArrayLength(arr)) {}
 };
 
 #ifdef OTTER_DEBUG
@@ -119,6 +119,32 @@ inline void assertImpl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 l
 }
 
 } // namespace detail
+
+struct Allocator
+{
+  virtual ~Allocator() = default;
+
+  /// Returned buffers must be aligned to at least `OTTER_MAX_ALIGN`.
+  virtual void* alloc(usize bytes) = 0;
+  virtual bool  dealloc(void* data, usize bytes) = 0;
+  virtual void* realloc(void* data, usize bytes) = 0;
+
+  /// Aligned alloc functions can be used for objects with an alignment requirement greater than
+  /// `OTTER_MAX_ALIGN`.
+  ///
+  /// If an allocator provides custom aligned alloc, all 3 functions must be implemented.
+  virtual void* allocAligned(usize bytes, usize align);
+  virtual bool  deallocAligned(void* data, usize bytes, usize align);
+  virtual void* reallocAligned(void* data, usize bytes, usize align);
+};
+
+struct OSAllocator : public Allocator
+{
+  void* alloc(usize bytes) override;
+  bool  dealloc(void* data, usize bytes) override;
+  void* realloc(void* data, usize bytes) override;
+};
+
 } // namespace otter
 
 #define OTTER_FATAL_ERROR(err, msg) (::otter::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
@@ -133,85 +159,3 @@ inline void assertImpl(bool pred, CoreStringSpan msg, CoreStringSpan file, i32 l
 
 #define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
 #define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
-
-#if defined(OTTER_WIN32) && defined(OTTER_64_BITS)
-#define OTTER_MAX_ALIGN 16
-#else
-#error "missing max align"
-#endif
-
-namespace otter {
-
-enum AllocResult
-{
-  AllocResult_Success = 0,
-  AllocResult_SystemError,
-};
-
-struct AllocBuffer
-{
-  void* Data = nullptr;
-  usize Size = 0;
-
-  bool isValid() const { return Data; }
-  bool operator!() const { return !isValid(); }
-};
-
-class Allocator
-{
-public:
-  virtual ~Allocator() = default;
-
-  /// Returned buffers must be aligned to at least `OTTER_MAX_ALIGN`.
-  virtual AllocBuffer alloc(usize bytes, usize align) = 0;
-  virtual AllocBuffer realloc(void* data, usize bytes, usize align) = 0;
-  virtual AllocResult dealloc(void* data, usize bytes, usize align) = 0;
-};
-
-class OSAllocator : public Allocator
-{
-public:
-  AllocBuffer alloc(usize bytes, usize align) override;
-  AllocBuffer realloc(void* data, usize bytes, usize align) override;
-  AllocResult dealloc(void* data, usize bytes, usize align) override;
-};
-
-inline Allocator& getDefaultAllocator() {
-  static OSAllocator Alloc;
-  return Alloc;
-}
-
-struct NewType
-{
-};
-constexpr NewType New;
-
-} // namespace otter
-
-inline void* operator new(usize bytes, usize align, otter::NewType) {
-  using namespace otter;
-
-  auto&       al = getDefaultAllocator();
-  AllocBuffer buf = al.alloc(bytes, align);
-  if (!buf)
-    BAD_ALLOC("could not alloc with operator new");
-
-  return buf.Data;
-}
-
-inline void* operator new(usize, void* data, otter::NewType) {
-  return data;
-}
-
-inline void operator delete(void* data, usize bytes, usize align, otter::NewType) {
-  auto& al = otter::getDefaultAllocator();
-  if (auto err = al.dealloc(data, bytes, align)) {
-    UNUSED(err);
-    BAD_ALLOC("could not dealloc with operator delete");
-  }
-}
-
-inline void operator delete(void*, void*, otter::NewType) {}
-
-#define OTTER_NEW(type)          new (alignof(type), otter::New) type
-#define OTTER_DELETE(type, data) operator delete(data, sizeof(type), alignof(type), otter::New)

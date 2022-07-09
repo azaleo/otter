@@ -24,50 +24,55 @@ HANDLE getHeap() {
 } // namespace
 #endif
 
-// TODO: Aligned alloc.
+void* Allocator::allocAligned(usize bytes, usize align) {
+  // TODO: aligned alloc.
+  return alloc(bytes);
+}
 
-AllocBuffer OSAllocator::alloc(usize bytes, usize align) {
+bool Allocator::deallocAligned(void* data, usize bytes, usize align) {
+  return dealloc(data, bytes);
+}
+
+void* Allocator::reallocAligned(void* data, usize bytes, usize align) {
+  return realloc(data, bytes);
+}
+
+void* OSAllocator::alloc(usize bytes) {
 #ifdef OTTER_WIN32
   HANDLE heap = getHeap();
   if (!heap)
-    return {};
+    return nullptr;
 
-  void* data = HeapAlloc(heap, 0, bytes);
-  if (!data)
-    return {};
-
-  return {data, bytes};
+  return HeapAlloc(heap, 0, bytes);
 #else
 #error "missing OS alloc impl"
 #endif
 }
 
-AllocBuffer OSAllocator::realloc(void* data, usize bytes, usize align) {
+bool OSAllocator::dealloc(void* data, usize bytes) {
 #ifdef OTTER_WIN32
   HANDLE heap = getHeap();
   if (!heap)
     return {};
 
-  void* newData = HeapReAlloc(heap, 0, data, bytes);
-  if (!newData)
-    return {};
-
-  return {newData, bytes};
+  return HeapFree(heap, 0, data);
 #else
-#error "missing OS realloc"
+#error "missing OS dealloc impl"
 #endif
 }
 
-AllocResult OSAllocator::dealloc(void* data, usize bytes, usize align) {
+void* OSAllocator::realloc(void* data, usize bytes) {
 #ifdef OTTER_WIN32
+  if (!data)
+    return alloc(bytes);
+
   HANDLE heap = getHeap();
   if (!heap)
-    return {};
+    return nullptr;
 
-  auto res = HeapFree(heap, 0, data);
-  return res ? AllocResult_Success : AllocResult_SystemError;
+  return HeapReAlloc(heap, 0, data, bytes);
 #else
-#error "missing OS dealloc"
+#error "missing OS realloc impl"
 #endif
 }
 

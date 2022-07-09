@@ -1,11 +1,11 @@
 #include <otter/support/core.hh>
 #include <stdio.h>
 
+using namespace otter;
+
 int main() {
-  auto* test = OTTER_NEW(int);
+  OSAllocator al;
 
-  new (test, otter::New) int(42);
-  printf("%d\n", *test);
-
-  OTTER_DELETE(int, test);
+  auto* test = (int*)al.alloc(sizeof(int));
+  puts("Hello, world!");
 }
