@@ -127,32 +127,6 @@ inline void assertImpl(
 }
 
 } // namespace detail
-
-struct Allocator
-{
-  virtual ~Allocator() = default;
-
-  /// Returned buffers must be aligned to at least `OTTER_MAX_ALIGN`.
-  virtual void* alloc(usize bytes) = 0;
-  virtual bool  dealloc(void* data, usize bytes) = 0;
-  virtual void* realloc(void* data, usize bytes) = 0;
-
-  /// Aligned alloc functions can be used for objects with an alignment requirement greater than
-  /// `OTTER_MAX_ALIGN`.
-  ///
-  /// If an allocator provides custom aligned alloc, all 3 functions must be implemented.
-  virtual void* allocAligned(usize bytes, usize align);
-  virtual bool  deallocAligned(void* data, usize bytes, usize align);
-  virtual void* reallocAligned(void* data, usize bytes, usize align);
-};
-
-struct OSAllocator : public Allocator
-{
-  void* alloc(usize bytes) override;
-  bool  dealloc(void* data, usize bytes) override;
-  void* realloc(void* data, usize bytes) override;
-};
-
 } // namespace otter
 
 #define OTTER_FATAL_ERROR(err, msg) ::otter::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__)
@@ -168,3 +142,13 @@ struct OSAllocator : public Allocator
 
 #define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
 #define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
+
+namespace otter {
+namespace mem {
+
+void* alloc(usize bytes);
+bool  dealloc(void* data, usize bytes);
+void* realloc(void* data, usize bytes);
+
+} // namespace mem
+} // namespace otter

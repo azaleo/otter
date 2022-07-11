@@ -6,10 +6,8 @@ using namespace otter;
 int main() {
   puts("Hello, world!");
 
-  OSAllocator al;
-
-  auto* test = (int*)al.alloc(sizeof(int));
+  auto* test = (int*)mem::alloc(sizeof(int));
   *test = 45;
   printf("%d\n", *test);
-  al.dealloc(test, sizeof(int));
+  mem::dealloc(test, sizeof(int));
 }

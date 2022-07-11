@@ -15,7 +15,7 @@ HANDLE getHeap() {
 
 } // namespace
 
-void* OSAllocator::alloc(usize bytes) {
+void* mem::alloc(usize bytes) {
   HANDLE heap = getHeap();
   if (!heap)
     return nullptr;
@@ -23,7 +23,7 @@ void* OSAllocator::alloc(usize bytes) {
   return HeapAlloc(heap, 0, bytes);
 }
 
-bool OSAllocator::dealloc(void* data, usize bytes) {
+bool mem::dealloc(void* data, usize bytes) {
   HANDLE heap = getHeap();
   if (!heap)
     return {};
@@ -31,7 +31,7 @@ bool OSAllocator::dealloc(void* data, usize bytes) {
   return HeapFree(heap, 0, data);
 }
 
-void* OSAllocator::realloc(void* data, usize bytes) {
+void* mem::realloc(void* data, usize bytes) {
   if (!data)
     return alloc(bytes);
 
