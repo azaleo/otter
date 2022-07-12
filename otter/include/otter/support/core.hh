@@ -144,11 +144,59 @@ inline void assertImpl(
 #define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
 
 namespace otter {
+
+template <typename T>
+const T& min(const T& a, const T& b) {
+  return a < b ? a : b;
+}
+
+template <typename T>
+const T& max(const T& a, const T& b) {
+  return a > b ? a : b;
+}
+
+template <typename T>
+const T& clamp(const T& val, const T& a, const T& b) {
+  return min(max(a, val), b);
+}
+
+} // namespace otter
+
+namespace otter {
 namespace mem {
 
-void* alloc(usize bytes);
-bool  dealloc(void* data, usize bytes);
-void* realloc(void* data, usize bytes);
+struct Allocator
+{
+  virtual ~Allocator() = default;
+
+  virtual void* alloc(usize size) = 0;
+  virtual bool  dealloc(void* data, usize size) = 0;
+  virtual void* realloc(void* data, usize size) = 0;
+};
+
+/// All default allocation functions are synchronized.
+void* alloc(usize size);
+bool  dealloc(void* data, usize size);
+void* realloc(void* data, usize size);
+
+struct DefaultAllocator : Allocator
+{
+  void* alloc(usize size) override { return mem::alloc(size); }
+  bool  dealloc(void* data, usize size) override { return mem::dealloc(data, size); }
+  void* realloc(void* data, usize size) override { return mem::realloc(data, size); }
+};
+
+inline Allocator& getDefaultAllocator() {
+  static DefaultAllocator _instance;
+  return _instance;
+}
+
+/// \pre \p align is assumed to be a power of 2.
+void* align(void* ptr, usize align);
+
+void* allocAligned(usize size, usize align, Allocator& al);
+bool  deallocAligned(void* data, usize size, usize align, Allocator& al);
+void* reallocAligned(void* data, usize size, usize align, Allocator& al);
 
 } // namespace mem
 } // namespace otter

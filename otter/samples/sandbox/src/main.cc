@@ -6,8 +6,11 @@ using namespace otter;
 int main() {
   puts("Hello, world!");
 
-  auto* test = (int*)mem::alloc(sizeof(int));
+  mem::Allocator& al = mem::getDefaultAllocator();
+
+  auto* test = (int*)mem::allocAligned(sizeof(int), alignof(int), al);
   *test = 45;
   printf("%d\n", *test);
-  mem::dealloc(test, sizeof(int));
+  printf("%p, %p\n", test, mem::align(test, 1024));
+  mem::deallocAligned(test, sizeof(int), alignof(int), al);
 }
