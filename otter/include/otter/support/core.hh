@@ -93,15 +93,19 @@ usize findCharArrayLength(const char (&arr)[N]) {
   return arr[N - 1] == '\0' ? N - 1 : N;
 }
 
-struct CoreStringSpan
+class CoreStringSpan
 {
   const char* _data = nullptr;
   usize       _length = 0;
 
+public:
   template <usize N>
   /*implicit*/ CoreStringSpan(const char (&arr)[N])
       : _data(arr)
       , _length(findCharArrayLength(arr)) {}
+
+  const char* data() const { return _data; }
+  usize       length() const { return _length; }
 };
 
 #ifdef OTTER_DEBUG
@@ -149,8 +153,9 @@ inline void assertImpl(
 namespace otter {
 namespace mem {
 
-struct Allocator
+class Allocator
 {
+public:
   virtual ~Allocator() = default;
 
   /// Pointers returned by basic allocation functions must be aligned to `OTTER_MAX_ALIGN`.
@@ -164,8 +169,9 @@ struct Allocator
   virtual void* reallocAligned(void* data, usize size, usize align);
 };
 
-struct OSAllocator : Allocator
+class OSAllocator : public Allocator
 {
+public:
   void* alloc(usize size) override;
   bool  dealloc(void* data, usize size) override;
   void* realloc(void* data, usize size) override;
@@ -175,9 +181,6 @@ inline Allocator& getDefaultAllocator() {
   static OSAllocator _instance;
   return _instance;
 }
-
-/// \pre \p align is assumed to be a power of 2.
-void* align(void* ptr, usize align);
 
 } // namespace mem
 } // namespace otter

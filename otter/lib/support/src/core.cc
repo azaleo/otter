@@ -29,6 +29,19 @@ usize getTotalAlignedBufSize(usize size, usize align) {
   return math::max(size + (align - OTTER_MAX_ALIGN), sizeof(void*));
 }
 
+void* align(void* basePtr, usize align) {
+  ASSUME(isPow2(align));
+  ASSUME(align > OTTER_MAX_ALIGN);
+  ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
+
+  // Make sure there is room to store the base ptr.
+  void* start = (void**)basePtr + 1;
+  void* aligned = (void*)(((usize)start & ~(align - 1)) + align);
+
+  *((void**)aligned - 1) = basePtr;
+  return aligned;
+}
+
 } // namespace
 
 void* Allocator::allocAligned(usize size, usize align) {
@@ -41,11 +54,7 @@ void* Allocator::allocAligned(usize size, usize align) {
   if (!basePtr)
     return nullptr;
 
-  ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
-  void* aligned = mem::align((void**)basePtr + 1, align);
-
-  *((void**)aligned - 1) = basePtr;
-  return aligned;
+  return mem::align(basePtr, align);
 }
 
 bool Allocator::deallocAligned(void* data, usize size, usize align) {
@@ -79,18 +88,8 @@ void* Allocator::reallocAligned(void* data, usize size, usize align) {
   if (!basePtr)
     return nullptr;
 
-  ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
-  void* aligned = mem::align((void**)basePtr + 1, align);
-
-  *((void**)aligned - 1) = basePtr;
-  return aligned;
+  return mem::align(basePtr, align);
 }
 
 } // namespace mem
-
-void* mem::align(void* ptr, usize align) {
-  ASSUME(isPow2(align));
-  return (void*)(((usize)ptr & ~(align - 1)) + align);
-}
-
 } // namespace otter
