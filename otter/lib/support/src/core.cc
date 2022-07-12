@@ -15,12 +15,8 @@ void detail::fatalErrorImpl(
 namespace mem {
 namespace {
 
-bool isPow2(usize n) {
-  return n != 0 && (n & (n - 1)) == 0;
-}
-
 usize getTotalAlignedBufSize(usize size, usize align) {
-  ASSUME(isPow2(align));
+  ASSUME(math::isPow2(align));
   ASSUME(align > OTTER_MAX_ALIGN);
 
   // Worst case scenario, the base pointer needs to be offset by (align - OTTER_MAX_ALIGN).
@@ -30,7 +26,7 @@ usize getTotalAlignedBufSize(usize size, usize align) {
 }
 
 void* align(void* basePtr, usize align) {
-  ASSUME(isPow2(align));
+  ASSUME(math::isPow2(align));
   ASSUME(align > OTTER_MAX_ALIGN);
   ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
 
@@ -48,7 +44,7 @@ void* Allocator::allocAligned(usize size, usize align) {
   if (align <= OTTER_MAX_ALIGN)
     return alloc(size);
 
-  ASSUME(isPow2(align));
+  ASSUME(math::isPow2(align));
 
   void* basePtr = alloc(getTotalAlignedBufSize(size, align));
   if (!basePtr)
@@ -66,7 +62,7 @@ bool Allocator::deallocAligned(void* data, usize size, usize align) {
   if (align <= OTTER_MAX_ALIGN)
     return dealloc(data, size);
 
-  ASSUME(isPow2(align));
+  ASSUME(math::isPow2(align));
   ASSUME((usize)data % align == 0);
 
   void* basePtr = *((void**)data - 1);
@@ -80,7 +76,7 @@ void* Allocator::reallocAligned(void* data, usize size, usize align) {
   if (align <= OTTER_MAX_ALIGN)
     return realloc(data, size);
 
-  ASSUME(isPow2(align));
+  ASSUME(math::isPow2(align));
   ASSUME((usize)data % align == 0);
 
   void* oldBasePtr = *((void**)data - 1);
