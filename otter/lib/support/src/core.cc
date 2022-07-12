@@ -23,8 +23,8 @@ usize getTotalAlignedBufSize(usize baseSize, usize align) {
   ASSUME(isPow2(align));
   ASSUME(align > OTTER_MAX_ALIGN);
 
-  // Worst case scenario, the base pointer needs to be offset by (align - 1).
-  return math::max(baseSize + (align - 1), sizeof(void*));
+  // Worst case scenario, the base pointer needs to be offset by (align - OTTER_MAX_ALIGN).
+  return math::max(baseSize + (align - OTTER_MAX_ALIGN), sizeof(void*));
 }
 
 } // namespace
