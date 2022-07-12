@@ -41,7 +41,7 @@
 #endif
 
 #if defined(OTTER_WIN32) && defined(OTTER_64_BITS)
-#define OTTER_MAX_ALIGN 16
+#define OTTER_MAX_ALIGN (16)
 #else
 #error "missing max align"
 #endif
@@ -74,6 +74,7 @@ typedef double f64;
 #endif
 
 namespace otter {
+namespace err {
 
 enum FatalError
 {
@@ -104,9 +105,9 @@ struct CoreStringSpan
 };
 
 #ifdef OTTER_DEBUG
-#define OTTER_DEBUG_FATAL_ERRORS true
+#define ERR_DEBUG_FATAL_ERRORS true
 #else
-#define OTTER_DEBUG_FATAL_ERRORS false
+#define ERR_DEBUG_FATAL_ERRORS false
 #endif
 
 OTTER_NORETURN void fatalErrorImpl(
@@ -114,53 +115,36 @@ OTTER_NORETURN void fatalErrorImpl(
     CoreStringSpan msg,
     CoreStringSpan file,
     i32            line,
-    bool           debug = OTTER_DEBUG_FATAL_ERRORS);
+    bool           debug = ERR_DEBUG_FATAL_ERRORS);
 
 inline void assertImpl(
     bool           pred,
     CoreStringSpan msg,
     CoreStringSpan file,
     i32            line,
-    bool           debug = OTTER_DEBUG_FATAL_ERRORS) {
+    bool           debug = ERR_DEBUG_FATAL_ERRORS) {
   if (!pred)
     fatalErrorImpl(FatalError_AssertFailed, msg, file, line, debug);
 }
 
 } // namespace detail
+} // namespace err
 } // namespace otter
 
-#define OTTER_FATAL_ERROR(err, msg) ::otter::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__)
+#define ERR_FATAL_ERROR(err, msg) \
+  (::otter::err::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
 
 #define ASSERT(pred, ...) \
-  ::otter::detail::assertImpl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__)
+  (::otter::err::detail::assertImpl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
 
 #ifdef OTTER_DEBUG
 #define ASSUME(pred, ...) ASSERT(pred, __VA_ARGS__)
 #else
-#define ASSUME(pred, ...) (void)0
+#define ASSUME(pred, ...) ((void)0)
 #endif
 
-#define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
-#define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
-
-namespace otter {
-
-template <typename T>
-const T& min(const T& a, const T& b) {
-  return a < b ? a : b;
-}
-
-template <typename T>
-const T& max(const T& a, const T& b) {
-  return a > b ? a : b;
-}
-
-template <typename T>
-const T& clamp(const T& val, const T& a, const T& b) {
-  return min(max(a, val), b);
-}
-
-} // namespace otter
+#define ERR_BAD_ALLOC(msg)   ERR_FATAL_ERROR(::otter::err::FatalError_BadAlloc, msg)
+#define ERR_UNREACHABLE(msg) ERR_FATAL_ERROR(::otter::err::FatalError_Unreachable, msg)
 
 namespace otter {
 namespace mem {
@@ -169,34 +153,42 @@ struct Allocator
 {
   virtual ~Allocator() = default;
 
+  /// Pointers returned by basic allocation functions must be aligned to `OTTER_MAX_ALIGN`.
   virtual void* alloc(usize size) = 0;
   virtual bool  dealloc(void* data, usize size) = 0;
   virtual void* realloc(void* data, usize size) = 0;
+
+  /// If an allocator provides custom aligned allocation, all 3 functions must be implemented.
+  virtual void* allocAligned(usize size, usize align);
+  virtual bool  deallocAligned(void* data, usize size, usize align);
+  virtual void* reallocAligned(void* data, usize size, usize align);
 };
 
-/// All default allocation functions are synchronized.
-void* alloc(usize size);
-bool  dealloc(void* data, usize size);
-void* realloc(void* data, usize size);
-
-struct DefaultAllocator : Allocator
+struct OSAllocator : Allocator
 {
-  void* alloc(usize size) override { return mem::alloc(size); }
-  bool  dealloc(void* data, usize size) override { return mem::dealloc(data, size); }
-  void* realloc(void* data, usize size) override { return mem::realloc(data, size); }
+  void* alloc(usize size) override;
+  bool  dealloc(void* data, usize size) override;
+  void* realloc(void* data, usize size) override;
 };
 
 inline Allocator& getDefaultAllocator() {
-  static DefaultAllocator _instance;
+  static OSAllocator _instance;
   return _instance;
 }
 
 /// \pre \p align is assumed to be a power of 2.
 void* align(void* ptr, usize align);
 
-void* allocAligned(usize size, usize align, Allocator& al);
-bool  deallocAligned(void* data, usize size, usize align, Allocator& al);
-void* reallocAligned(void* data, usize size, usize align, Allocator& al);
-
 } // namespace mem
 } // namespace otter
+
+#define MEM_ALLOC(size)         (::otter::mem::getDefaultAllocator().alloc(size))
+#define MEM_DEALLOC(data, size) (::otter::mem::getDefaultAllocator().dealloc(data, size))
+#define MEM_REALLOC(data, size) (::otter::mem::getDefaultAllocator().realloc(data, size))
+
+#define MEM_ALLOC_ALIGNED(size, align) \
+  (::otter::mem::getDefaultAllocator().allocAligned(size, align))
+#define MEM_DEALLOC_ALIGNED(data, size, align) \
+  (::otter::mem::getDefaultAllocator().deallocAligned(data, size, align))
+#define MEM_REALLOC_ALIGNED(data, size, align) \
+  (::otter::mem::getDefaultAllocator().reallocAligned(data, size, align))

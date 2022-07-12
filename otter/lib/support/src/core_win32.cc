@@ -6,6 +6,7 @@
 #endif
 
 namespace otter {
+namespace mem {
 namespace {
 
 HANDLE getHeap() {
@@ -15,7 +16,7 @@ HANDLE getHeap() {
 
 } // namespace
 
-void* mem::alloc(usize bytes) {
+void* OSAllocator::alloc(usize bytes) {
   HANDLE heap = getHeap();
   if (!heap)
     return nullptr;
@@ -23,7 +24,7 @@ void* mem::alloc(usize bytes) {
   return HeapAlloc(heap, 0, bytes);
 }
 
-bool mem::dealloc(void* data, usize bytes) {
+bool OSAllocator::dealloc(void* data, usize) {
   HANDLE heap = getHeap();
   if (!heap)
     return {};
@@ -31,7 +32,7 @@ bool mem::dealloc(void* data, usize bytes) {
   return HeapFree(heap, 0, data);
 }
 
-void* mem::realloc(void* data, usize bytes) {
+void* OSAllocator::realloc(void* data, usize bytes) {
   if (!data)
     return alloc(bytes);
 
@@ -42,4 +43,5 @@ void* mem::realloc(void* data, usize bytes) {
   return HeapReAlloc(heap, 0, data, bytes);
 }
 
+} // namespace mem
 } // namespace otter

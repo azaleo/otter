@@ -1,1 +1,3 @@
-target_sources(otter PUBLIC core.hh)
+target_sources(otter PUBLIC
+  core.hh
+  math.hh)
