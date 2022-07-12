@@ -24,6 +24,8 @@ usize getTotalAlignedBufSize(usize baseSize, usize align) {
   ASSUME(align > OTTER_MAX_ALIGN);
 
   // Worst case scenario, the base pointer needs to be offset by (align - OTTER_MAX_ALIGN).
+  // This assumes base pointers are always aligned to OTTER_MAX_ALIGN (which is a requirement of the
+  // Allocator interface).
   return math::max(baseSize + (align - OTTER_MAX_ALIGN), sizeof(void*));
 }
 
@@ -36,6 +38,10 @@ void* Allocator::allocAligned(usize size, usize align) {
   ASSUME(isPow2(align));
 
   void* basePtr = alloc(getTotalAlignedBufSize(size, align));
+  if (!basePtr)
+    return nullptr;
+
+  ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
   void* aligned = mem::align((void**)basePtr + 1, align);
 
   *((void**)aligned - 1) = basePtr;
@@ -69,8 +75,11 @@ void* Allocator::reallocAligned(void* data, usize size, usize align) {
   ASSUME((usize)data % align == 0);
 
   void* oldBasePtr = *((void**)data - 1);
-
   void* basePtr = realloc(oldBasePtr, getTotalAlignedBufSize(size, align));
+  if (!basePtr)
+    return nullptr;
+
+  ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
   void* aligned = mem::align((void**)basePtr + 1, align);
 
   *((void**)aligned - 1) = basePtr;
