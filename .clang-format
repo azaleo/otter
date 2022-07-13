@@ -11,5 +11,11 @@ BinPackArguments: false
 BinPackParameters: false
 BreakConstructorInitializers: BeforeComma
 ColumnLimit: 100
+FixNamespaceComments: false
 IncludeBlocks: Merge
+NamespaceIndentation: All
 PointerAlignment: Left
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterNamespace: true
