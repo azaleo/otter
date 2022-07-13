@@ -21,9 +21,9 @@ void* applyAlign(void* basePtr, usize align) {
   ASSUME(align > OTTER_MAX_ALIGN);
   ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
 
-  // Make sure there is room to store the base ptr.
-  void* start = (void**)basePtr + 1;
-  void* aligned = (void*)(((usize)start & ~(align - 1)) + align);
+  // +1 to make sure there is room for the base pointer.
+  void* aligned = (void**)basePtr + 1;
+  aligned = (void*)(((usize)aligned & ~(align - 1)) + align);
 
   *((void**)aligned - 1) = basePtr;
   return aligned;
@@ -79,4 +79,10 @@ void* Allocator::reallocAligned(void* data, usize size, usize align) {
 }
 
 } // namespace mem
+
+mem::Allocator& mem::getDefaultAllocator() {
+  static OSAllocator _instance;
+  return _instance;
+}
+
 } // namespace otter

@@ -27,10 +27,7 @@ public:
   void* realloc(void* data, usize size) override;
 };
 
-inline Allocator& getDefaultAllocator() {
-  static OSAllocator _instance;
-  return _instance;
-}
+Allocator& getDefaultAllocator();
 
 } // namespace mem
 } // namespace otter
