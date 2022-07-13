@@ -22,8 +22,8 @@ void* applyAlign(void* basePtr, usize align) {
   ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
 
   // +1 to make sure there is room for the base pointer.
-  void* aligned = (void**)basePtr + 1;
-  aligned = (void*)(((usize)aligned & ~(align - 1)) + align);
+  void* start = (void**)basePtr + 1;
+  void* aligned = (void*)(((usize)start & ~(align - 1)) + align);
 
   *((void**)aligned - 1) = basePtr;
   return aligned;

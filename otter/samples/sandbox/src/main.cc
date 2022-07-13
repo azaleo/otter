@@ -9,5 +9,5 @@ int main() {
   auto* test = (int*)MEM_ALLOC_ALIGNED(sizeof(int), 256);
   *test = 45;
   printf("*%p = %d\n", test, *test);
-  MEM_DEALLOC_ALIGNED(test, sizeof(int), alignof(int));
+  MEM_DEALLOC_ALIGNED(test, sizeof(int), 256);
 }
