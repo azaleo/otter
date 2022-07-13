@@ -1,4 +1,6 @@
 target_sources(otter PUBLIC
-  core.hh
+  build.hh
+  error_handling.hh
   math.hh
+  memory.hh
   traits.hh)

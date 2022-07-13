@@ -1,4 +1,4 @@
-#include "otter/support/core.hh"
+#include "otter/support/memory.hh"
 
 #ifdef OTTER_WIN32
 #define WIN32_LEAN_AND_MEAN

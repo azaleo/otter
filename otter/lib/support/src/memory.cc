@@ -1,17 +1,8 @@
-#include "otter/support/core.hh"
+#include "otter/support/memory.hh"
+#include "otter/support/error_handling.hh"
 #include "otter/support/math.hh"
-#include <stdlib.h>
 
 namespace otter {
-namespace err {
-
-void detail::fatalErrorImpl(
-    FatalError err, CoreStringSpan msg, CoreStringSpan file, i32 line, bool debug) {
-  exit(err == FatalError_BadAlloc ? 102 : 101);
-}
-
-} // namespace err
-
 namespace mem {
 namespace {
 
@@ -25,7 +16,7 @@ usize getTotalAlignedBufSize(usize size, usize align) {
   return math::max(size + (align - OTTER_MAX_ALIGN), sizeof(void*));
 }
 
-void* align(void* basePtr, usize align) {
+void* applyAlign(void* basePtr, usize align) {
   ASSUME(math::isPow2(align));
   ASSUME(align > OTTER_MAX_ALIGN);
   ASSUME((usize)basePtr % OTTER_MAX_ALIGN == 0);
@@ -50,7 +41,7 @@ void* Allocator::allocAligned(usize size, usize align) {
   if (!basePtr)
     return nullptr;
 
-  return mem::align(basePtr, align);
+  return applyAlign(basePtr, align);
 }
 
 bool Allocator::deallocAligned(void* data, usize size, usize align) {
@@ -84,7 +75,7 @@ void* Allocator::reallocAligned(void* data, usize size, usize align) {
   if (!basePtr)
     return nullptr;
 
-  return mem::align(basePtr, align);
+  return applyAlign(basePtr, align);
 }
 
 } // namespace mem
