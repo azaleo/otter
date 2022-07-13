@@ -2,6 +2,12 @@
 
 #include "build.hh"
 
+#ifdef OTTER_DEBUG
+#define DEBUG_FATAL_ERRORS true
+#else
+#define DEBUG_FATAL_ERRORS false
+#endif
+
 namespace otter
 {
   namespace FatalError
@@ -37,12 +43,6 @@ namespace otter
       usize       length() const { return _length; }
     };
 
-#ifdef OTTER_DEBUG
-#define DEBUG_FATAL_ERRORS true
-#else
-#define DEBUG_FATAL_ERRORS false
-#endif
-
     OTTER_NORETURN void fatalErrorImpl(
         FatalError::Enum err,
         CoreStringSpan   msg,
@@ -62,6 +62,8 @@ namespace otter
   }
 }
 
+#define OTTER_FATAL_ERROR(err, msg) (::otter::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
+
 #define ASSERT(pred, ...) \
   (::otter::detail::assertImpl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
 
@@ -71,7 +73,5 @@ namespace otter
 #define ASSUME(pred, ...) ((void)0)
 #endif
 
-#define BAD_ALLOC(msg) \
-  (::otter::detail::fatalErrorImpl(::otter::FatalError::BadAlloc, msg, __FILE__, __LINE__))
-#define UNREACHABLE(msg) \
-  (::otter::detail::fatalErrorImpl(::otter::FatalError::Unreachable, msg, __FILE__, __LINE__))
+#define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::otter::FatalError::BadAlloc, msg)
+#define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError::Unreachable, msg)
