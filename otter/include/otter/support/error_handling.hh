@@ -67,5 +67,5 @@ namespace detail
 #define ASSUME(pred, ...) ((void)0)
 #endif
 
-#define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::otter::FatalError_BadAlloc, msg)
-#define UNREACHABLE(msg) OTTER_FATAL_ERROR(::otter::FatalError_Unreachable, msg)
+#define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::FatalError_BadAlloc, msg)
+#define UNREACHABLE(msg) OTTER_FATAL_ERROR(::FatalError_Unreachable, msg)
