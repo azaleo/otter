@@ -2,7 +2,7 @@
 
 #include "build.hh"
 
-namespace otter
+namespace traits
 {
   template <typename T>
   struct TypeIdentity {

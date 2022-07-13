@@ -5,7 +5,7 @@
 #include <Windows.h>
 #endif
 
-namespace otter
+namespace mem
 {
   namespace
   {

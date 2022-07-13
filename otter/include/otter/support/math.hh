@@ -2,7 +2,7 @@
 
 #include "traits.hh"
 
-namespace otter
+namespace math
 {
   template <typename T>
   const T& min(const T& a, const T& b) {
@@ -21,7 +21,7 @@ namespace otter
 
   template <typename T>
   bool isPow2(T n) {
-    static_assert(IsInt<T>::Value, "`isPow2` only accepts integers");
+    static_assert(traits::IsInt<T>::Value, "`isPow2` only accepts integers");
     return n > 0 && (n & (n - 1)) == 0;
   }
 }

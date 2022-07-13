@@ -2,7 +2,7 @@
 
 #include "build.hh"
 
-namespace otter
+namespace mem
 {
   class Allocator {
   public:
@@ -29,12 +29,12 @@ namespace otter
   Allocator& getDefaultAllocator();
 }
 
-#define MEM_ALLOC(size)         (::otter::getDefaultAllocator().alloc(size))
-#define MEM_DEALLOC(data, size) (::otter::getDefaultAllocator().dealloc(data, size))
-#define MEM_REALLOC(data, size) (::otter::getDefaultAllocator().realloc(data, size))
+#define MEM_ALLOC(size)         (::mem::getDefaultAllocator().alloc(size))
+#define MEM_DEALLOC(data, size) (::mem::getDefaultAllocator().dealloc(data, size))
+#define MEM_REALLOC(data, size) (::mem::getDefaultAllocator().realloc(data, size))
 
-#define MEM_ALLOC_ALIGNED(size, align) (::otter::getDefaultAllocator().allocAligned(size, align))
+#define MEM_ALLOC_ALIGNED(size, align) (::mem::getDefaultAllocator().allocAligned(size, align))
 #define MEM_DEALLOC_ALIGNED(data, size, align) \
-  (::otter::getDefaultAllocator().deallocAligned(data, size, align))
+  (::mem::getDefaultAllocator().deallocAligned(data, size, align))
 #define MEM_REALLOC_ALIGNED(data, size, align) \
-  (::otter::getDefaultAllocator().reallocAligned(data, size, align))
+  (::mem::getDefaultAllocator().reallocAligned(data, size, align))
