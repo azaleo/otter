@@ -1,6 +1,7 @@
 #pragma once
 
 #include "build.hh"
+#include "traits.hh"
 
 namespace mem
 {
@@ -31,3 +32,31 @@ namespace mem
   (::mem::getDefaultAllocator().deallocAligned(data, size, align))
 #define MEM_REALLOC_ALIGNED(data, size, align) \
   (::mem::getDefaultAllocator().reallocAligned(data, size, align))
+
+template <typename T>
+T* MEM_NEW() {
+  return (T*)MEM_ALLOC_ALIGNED(sizeof(T), alignof(T));
+}
+
+template <typename T>
+void MEM_DELETE(T* data) {
+  if (!data)
+    return;
+
+  data->~T();
+  MEM_DEALLOC_ALIGNED(data, sizeof(T), alignof(T));
+}
+
+namespace mem
+{
+  struct CustomNewType {};
+  constexpr CustomNewType CustomNew;
+}
+
+inline void* operator new(usize, void* data, mem::CustomNewType) { return data; }
+inline void  operator delete(void*, void*, mem::CustomNewType) {}
+
+template <typename T, typename... Args>
+void MEM_CONSTRUCT(T* data, Args&&... args) {
+  new (data, mem::CustomNew) T(FORWARD(Args, args)...);
+}

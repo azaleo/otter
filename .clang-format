@@ -5,7 +5,6 @@ AlignConsecutiveBitFields: Consecutive
 AlignConsecutiveMacros: Consecutive
 AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: DontAlign
-AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false

@@ -4,8 +4,8 @@
 int main() {
   puts("Hello, world!");
 
-  auto* test = (int*)MEM_ALLOC(sizeof(int));
-  *test = 45;
+  auto* test = MEM_NEW<int>();
+  MEM_CONSTRUCT(test, 45);
   printf("*%p = %d\n", test, *test);
-  MEM_DEALLOC(test, sizeof(int));
+  MEM_DELETE(test);
 }
