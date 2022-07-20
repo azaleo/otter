@@ -1,6 +1,7 @@
 #include "otter/support/memory.hh"
 #include "otter/support/error_handling.hh"
 #include "otter/support/math.hh"
+#include "otter_support/os.hh"
 
 namespace mem
 {
@@ -75,6 +76,19 @@ namespace mem
       return nullptr;
 
     return applyAlign(basePtr, align);
+  }
+}
+
+namespace mem
+{
+  namespace
+  {
+    class OSAllocator : public Allocator {
+    public:
+      void* alloc(usize size) override { return detail::os::alloc(size); }
+      bool  dealloc(void* data, usize size) override { return detail::os::dealloc(data, size); }
+      void* realloc(void* data, usize size) override { return detail::os::realloc(data, size); }
+    };
   }
 }
 

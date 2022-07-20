@@ -1,11 +1,11 @@
-#include "otter/support/memory.hh"
+#include "otter_support/os.hh"
 
 #ifdef OTTER_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #endif
 
-namespace mem
+namespace detail
 {
   namespace
   {
@@ -15,7 +15,7 @@ namespace mem
     }
   }
 
-  void* OSAllocator::alloc(usize bytes) {
+  void* os::alloc(usize bytes) {
     HANDLE heap = getHeap();
     if (!heap)
       return nullptr;
@@ -23,7 +23,7 @@ namespace mem
     return HeapAlloc(heap, 0, bytes);
   }
 
-  bool OSAllocator::dealloc(void* data, usize) {
+  bool os::dealloc(void* data, usize) {
     HANDLE heap = getHeap();
     if (!heap)
       return {};
@@ -31,7 +31,7 @@ namespace mem
     return HeapFree(heap, 0, data);
   }
 
-  void* OSAllocator::realloc(void* data, usize bytes) {
+  void* os::realloc(void* data, usize bytes) {
     if (!data)
       return alloc(bytes);
 

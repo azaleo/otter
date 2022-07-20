@@ -19,13 +19,6 @@ namespace mem
     virtual void* reallocAligned(void* data, usize size, usize align);
   };
 
-  class OSAllocator : public Allocator {
-  public:
-    void* alloc(usize size) override;
-    bool  dealloc(void* data, usize size) override;
-    void* realloc(void* data, usize size) override;
-  };
-
   Allocator& getDefaultAllocator();
 }
 
