@@ -33,20 +33,6 @@ namespace mem
 #define MEM_REALLOC_ALIGNED(data, size, align) \
   (::mem::getDefaultAllocator().reallocAligned(data, size, align))
 
-template <typename T>
-T* MEM_NEW() {
-  return (T*)MEM_ALLOC_ALIGNED(sizeof(T), alignof(T));
-}
-
-template <typename T>
-void MEM_DELETE(T* data) {
-  if (!data)
-    return;
-
-  data->~T();
-  MEM_DEALLOC_ALIGNED(data, sizeof(T), alignof(T));
-}
-
 namespace mem
 {
   struct CustomNewType {};
