@@ -24,18 +24,14 @@ namespace detail
     return arr[N - 1] == '\0' ? N - 1 : N;
   }
 
-  class CoreStringSpan {
-    const char* _data = nullptr;
-    usize       _length = 0;
+  struct CoreStringSpan {
+    const char* Data = nullptr;
+    usize       Length = 0;
 
-  public:
     template <usize N>
     /*implicit*/ CoreStringSpan(const char (&arr)[N])
-        : _data(arr)
-        , _length(findCharArrayLength(arr)) {}
-
-    const char* data() const { return _data; }
-    usize       length() const { return _length; }
+        : Data(arr)
+        , Length(findCharArrayLength(arr)) {}
   };
 
   OTTER_NORETURN void fatalErrorImpl(

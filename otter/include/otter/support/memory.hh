@@ -5,7 +5,7 @@
 
 namespace mem
 {
-  class Allocator {
+  struct Allocator {
   public:
     virtual ~Allocator() = default;
 
@@ -42,7 +42,12 @@ namespace mem
 inline void* operator new(usize, void* data, mem::CustomNewType) { return data; }
 inline void  operator delete(void*, void*, mem::CustomNewType) {}
 
-template <typename T, typename... Args>
-void MEM_CONSTRUCT(T* data, Args&&... args) {
-  new (data, mem::CustomNew) T(FORWARD(Args, args)...);
+namespace mem
+{
+  template <typename T, typename... Args>
+  void construct(T* data, Args&&... args) {
+    new (data, CustomNew) T(FORWARD(Args, args)...);
+  }
 }
+
+#define MEM_CONSTRUCT(data, ...) (::mem::construct(data, __VA_ARGS__))
