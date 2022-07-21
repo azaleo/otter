@@ -19,18 +19,18 @@ namespace mem
     virtual void* reallocAligned(void* data, usize size, usize align);
   };
 
-  Allocator& getDefaultAllocator();
+  Allocator& getMainAllocator();
 }
 
-#define MEM_ALLOC(size)         (::mem::getDefaultAllocator().alloc(size))
-#define MEM_DEALLOC(data, size) (::mem::getDefaultAllocator().dealloc(data, size))
-#define MEM_REALLOC(data, size) (::mem::getDefaultAllocator().realloc(data, size))
+#define MEM_ALLOC(size)         (::mem::getMainAllocator().alloc(size))
+#define MEM_DEALLOC(data, size) (::mem::getMainAllocator().dealloc(data, size))
+#define MEM_REALLOC(data, size) (::mem::getMainAllocator().realloc(data, size))
 
-#define MEM_ALLOC_ALIGNED(size, align) (::mem::getDefaultAllocator().allocAligned(size, align))
+#define MEM_ALLOC_ALIGNED(size, align) (::mem::getMainAllocator().allocAligned(size, align))
 #define MEM_DEALLOC_ALIGNED(data, size, align) \
-  (::mem::getDefaultAllocator().deallocAligned(data, size, align))
+  (::mem::getMainAllocator().deallocAligned(data, size, align))
 #define MEM_REALLOC_ALIGNED(data, size, align) \
-  (::mem::getDefaultAllocator().reallocAligned(data, size, align))
+  (::mem::getMainAllocator().reallocAligned(data, size, align))
 
 namespace mem
 {

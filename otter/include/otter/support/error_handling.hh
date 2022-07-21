@@ -3,9 +3,9 @@
 #include "build.hh"
 
 #ifdef OTTER_DEBUG
-#define OTTER_DEBUG_FATAL_ERRORS true
+#define DEBUG_FATAL_ERRORS true
 #else
-#define OTTER_DEBUG_FATAL_ERRORS false
+#define DEBUG_FATAL_ERRORS false
 #endif
 
 enum FatalError {
@@ -25,13 +25,13 @@ namespace detail
   }
 
   struct CoreStringSpan {
-    const char* Data = nullptr;
-    usize       Length = 0;
+    const char* _data = nullptr;
+    usize       _length = 0;
 
     template <usize N>
     /*implicit*/ CoreStringSpan(const char (&arr)[N])
-        : Data(arr)
-        , Length(findCharArrayLength(arr)) {}
+        : _data(arr)
+        , _length(findCharArrayLength(arr)) {}
   };
 
   OTTER_NORETURN void fatalErrorImpl(
@@ -39,20 +39,20 @@ namespace detail
       CoreStringSpan msg,
       CoreStringSpan file,
       i32            line,
-      bool           debug = OTTER_DEBUG_FATAL_ERRORS);
+      bool           debug = DEBUG_FATAL_ERRORS);
 
   inline void assertImpl(
       bool           pred,
       CoreStringSpan msg,
       CoreStringSpan file,
       i32            line,
-      bool           debug = OTTER_DEBUG_FATAL_ERRORS) {
+      bool           debug = DEBUG_FATAL_ERRORS) {
     if (!pred)
       fatalErrorImpl(FatalError_AssertFailed, msg, file, line, debug);
   }
 }
 
-#define OTTER_FATAL_ERROR(err, msg) (::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
+#define FATAL_ERROR(err, msg) (::detail::fatalErrorImpl(err, msg, __FILE__, __LINE__))
 
 #define ASSERT(pred, ...) \
   (::detail::assertImpl(pred, "assert failed: \"" #pred "\"", __FILE__, __LINE__))
@@ -63,5 +63,5 @@ namespace detail
 #define ASSUME(pred, ...) ((void)0)
 #endif
 
-#define BAD_ALLOC(msg)   OTTER_FATAL_ERROR(::FatalError_BadAlloc, msg)
-#define UNREACHABLE(msg) OTTER_FATAL_ERROR(::FatalError_Unreachable, msg)
+#define BAD_ALLOC(msg)   FATAL_ERROR(::FatalError_BadAlloc, msg)
+#define UNREACHABLE(msg) FATAL_ERROR(::FatalError_Unreachable, msg)

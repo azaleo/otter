@@ -92,7 +92,7 @@ namespace mem
   }
 }
 
-mem::Allocator& mem::getDefaultAllocator() {
+mem::Allocator& mem::getMainAllocator() {
   static OSAllocator _instance;
   return _instance;
 }

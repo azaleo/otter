@@ -3,4 +3,5 @@ target_sources(otter PUBLIC
   error_handling.hh
   math.hh
   memory.hh
-  traits.hh)
+  traits.hh
+  vector.hh)
