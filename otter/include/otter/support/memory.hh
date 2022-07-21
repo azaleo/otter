@@ -1,7 +1,6 @@
 #pragma once
 
 #include "build.hh"
-#include "traits.hh"
 
 namespace mem
 {
@@ -46,7 +45,7 @@ namespace mem
 {
   template <typename T, typename... Args>
   void construct(T* data, Args&&... args) {
-    new (data, CustomNew) T(FORWARD(Args, args)...);
+    new (data, CustomNew) T(args...);
   }
 }
 
